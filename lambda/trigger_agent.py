@@ -6,10 +6,10 @@ Calls the AgentCore HTTP gateway with a prompt referencing the uploaded file.
 """
 
 import json
+import re
 import uuid
 import urllib.request
 import urllib.error
-import os
 
 import boto3
 from botocore.auth import SigV4Auth
@@ -19,6 +19,29 @@ from botocore.credentials import Credentials
 GATEWAY_URL = "https://threat-triage-gateway-rq5slglhwy.gateway.bedrock-agentcore.ap-south-1.amazonaws.com/target-quick-start-d31811/invocations"
 REGION = "ap-south-1"
 SERVICE = "bedrock-agentcore"
+
+
+def _parse_sse_response(raw: str) -> str:
+    """Reconstruct the LLM thinking trace and final output from raw SSE chunks."""
+    chunks = re.findall(r'data:\s*"((?:[^"\\]|\\.)*)"', raw)
+    text = "".join(
+        c.replace("\\n", "\n").replace("\\t", "\t").replace('\\"', '"').replace("\\\\", "\\")
+        for c in chunks
+    )
+    if not text:
+        return raw[:3000]
+
+    sections = []
+    thinking_blocks = re.findall(r"<thinking>(.*?)</thinking>", text, re.DOTALL)
+    final_output = re.sub(r"<thinking>.*?</thinking>", "", text, flags=re.DOTALL).strip()
+
+    if thinking_blocks:
+        combined_thinking = " ".join(b.strip() for b in thinking_blocks)
+        sections.append(f"[THINKING TRACE]\n{combined_thinking}")
+    if final_output:
+        sections.append(f"[AGENT OUTPUT]\n{final_output}")
+
+    return "\n\n" + "\n\n".join(sections) if sections else text
 
 
 def handler(event, context):
@@ -81,7 +104,7 @@ def handler(event, context):
         with urllib.request.urlopen(req, timeout=300) as resp:
             response_body = resp.read().decode("utf-8")
             print(f"Agent response received ({len(response_body)} bytes)")
-            print(response_body[:2000])  # Log first 2000 chars
+            print(_parse_sse_response(response_body))
             return {
                 "statusCode": 200,
                 "body": f"Agent invoked successfully for file: {key}"

@@ -1,3 +1,16 @@
 {
-  "targets": {}
+  "targets": {
+    "default": {
+      "resources": {
+        "runtimes": {
+          "ThreatTriageAgent": {
+            "runtimeId": "ThreatTriageAgent_ThreatTriageAgent-275frsApml",
+            "runtimeArn": "arn:aws:bedrock-agentcore:ap-south-1:960470369817:runtime/ThreatTriageAgent_ThreatTriageAgent-275frsApml",
+            "roleArn": "arn:aws:iam::960470369817:role/AgentCore-ThreatTriageAge-ApplicationAgentThreatTri-8JprCRZLbRW9"
+          }
+        },
+        "stackName": "AgentCore-ThreatTriageAgent-default"
+      }
+    }
+  }
 }

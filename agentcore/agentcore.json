@@ -7,7 +7,17 @@
     "agentcore:created-by": "agentcore-cli",
     "agentcore:project-name": "ThreatTriageAgent"
   },
-  "runtimes": [],
+  "runtimes": [
+    {
+      "name": "ThreatTriageAgent",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/ThreatTriageAgent/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP"
+    }
+  ],
   "memories": [],
   "credentials": [],
   "evaluators": [],
